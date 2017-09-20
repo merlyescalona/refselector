@@ -1,0 +1,8 @@
+argparse
+datetime
+ConfigParser
+datetime
+logging
+numpy
+scipy
+setuptools
