@@ -25,8 +25,9 @@ setup(name='ngsphy-refselector',\
         'logging',\
         'numpy',\
         'setuptools',\
-        'scipy'\
-    ],
+        'scipy',\
+        'sqlite3'\
+    ],\
     classifiers=[\
         'Development Status :: 4 - Beta',\
         'Intended Audience :: Education',\

@@ -1,11 +1,7 @@
-import argparse,datetime,logging,os,sys
-import LociReferenceSelection as lrf
-from MEOutputFormatter import MEOutputFormatter as mof
-from MELoggingFormatter import MELoggingFormatter as mlf
-from MELogLevels import MELogLevels as mll
+import argparse,datetime,logging,os,sys, refselector, msatools
+import loggingformatter as lf
 import numpy as np
 import random as rnd
-from select import select
 ################################################################################
 # CONSTANTS
 VERSION=1
@@ -47,14 +43,10 @@ def createLogFile():
 	fh.setFormatter(formatter)
 	APPLOGGER.addHandler(fh)
 ################################################################################
+# Handling parameters
+################################################################################
 def handlingParameters():
-	"""
-		Handling parameters.
-		This functiuon takes care of the cmd-line input.
-	"""
-
 	parser = argparse.ArgumentParser(\
-    parser = argparse.ArgumentParser(\
         prog="{0} (v.{1}.{2}.{3})".format(PROGRAM_NAME,VERSION,MIN_VERSION,FIX_VERSION),\
         formatter_class=argparse.RawDescriptionHelpFormatter,\
         description=\
@@ -82,7 +74,7 @@ Specified method to obtain the reference loci used for the design of probes.
 Values range from 0-4 ( Default: (0)), where:
 
 	(0): Considers the outgroup sequence as the reference loci.
-    (1): Extracts a specific sequence per replicate (will need parameter -sdf/--seq-desc-file)
+	(1): Extracts a specific sequence per replicate (will need parameter -sdf/--seq-desc-file)
 	(2): Selects a random sequence from the ingroups.
 	(3): Selects randomly a specie and a consensus sequence of the sequences belonging to that species.
 	(4): Generates a consensus sequences from all the sequences involved.
@@ -115,10 +107,9 @@ Output:
 		help="Path where output will be written. ",\
 		required=True)
 	optionalGroup= parser.add_argument_group('Optional arguments')
-    optionalGroup.add_argument('-sdf','--seq-desc-file',metavar='<sequence_descriptions_file_path>', type=int,\
-    default="",\
-		help="When method = 4 has been selected, it is required to identify a file with the sequence descriptions, "+
-        "used as identifiers, corresponding to the sequence that will be used as reference per replicate.")
+	optionalGroup.add_argument('-sdf','--seq-desc-file',metavar='<sequence_descriptions_file_path>', type=int,\
+		help="When method = 4 has been selected, it is required to identify a file with the sequence descriptions, "+\
+		"used as identifiers, corresponding to the sequence that will be used as reference per replicate.")
 	optionalGroup.add_argument('-n','--nsize',metavar='<N_seq_size>', type=int,\
 		default=-1,\
 		help="Number of N's that will be introduced to separate the reference sequences selected. "+\
@@ -126,8 +117,8 @@ Output:
             "otherwise, the output will be a single sequence file per replicate consisting of a concatenation  "+\
             "of the reference sequences selected separated with as many N's as set for this parameter.")
 	optionalGroup.add_argument('-l','--log',metavar='<log_level>', type=str,\
-		choices=mll.LOG_LEVEL_CHOICES, default="INFO",\
-		help='Specified level of log that will be shown through the standard output. Entire log will be stored in a separate file. Values:{0}. Default: {1}. '.format(mll.LOG_LEVEL_CHOICES,mll.LOG_LEVEL_CHOICES[1]))
+		choices=LOG_LEVEL_CHOICES, default="INFO",\
+		help='Specified level of log that will be shown through the standard output. Entire log will be stored in a separate file. Values:{0}. Default: {1}. '.format(LOG_LEVEL_CHOICES,LOG_LEVEL_CHOICES[1]))
 	informationGroup= parser.add_argument_group('Information arguments')
 	informationGroup.add_argument('-v', '--version',\
 		action='version',\
@@ -143,17 +134,30 @@ Output:
 		sys.exit(-1)
 	return tmpArgs
 
-"""
-MAIN
-"""
-if __name__=="__main__":
+################################################################################
+# MAIN
+################################################################################
+def main():
 	try:
 		cmdArgs = handlingParameters()
 		print(cmdArgs)
-		prog = lrf.LociReferenceSelection(cmdArgs)
+		prog = refselector.ReferenceSelection(cmdArgs)
+		APPLOGGER.setLevel(cmdArgs.log.upper())
 		prog.run()
-        sys.exit(0)
+	except refselector.NRSException as ex:
+	    if ex.expression:
+	        APPLOGGER.info("REFSELECTOR finished properly.")
+	        APPLOGGER.info("Elapsed time (ETA):\t{0}".format(ex.time))
+	        APPLOGGER.info("Ending at:\t{0}".format(datetime.datetime.now().strftime("%a, %b %d %Y. %I:%M:%S %p")))
+	        sys.exit()
+	    else:
+	        APPLOGGER.error(ex.message)
+	        APPLOGGER.error("Elapsed time (ETA):\t{0}".format(ex.time))
+	        APPLOGGER.error("Ending at:\t{0}".format(datetime.datetime.now().strftime("%a, %b %d %Y. %I:%M:%S %p")))
+	        sys.exit(-1)
 	except KeyboardInterrupt:
-		sys.stdout.write("{0}{1}\nInterrupted!{2}\nPlease run again for the expected outcome.\n".format(mof.BOLD,mof.DARKCYAN, mof.END))
-		sys.exit(-1)
-_
+	    APPLOGGER.error("{0}{1}\nProgram has been interrupted.{2}\nPlease run again for the expected outcome.\n{3}\n".format("\033[91m","\033[1m","\033[0m",LINE))
+	    sys.exit(-1)
+
+if __name__=="__main__":
+	main()

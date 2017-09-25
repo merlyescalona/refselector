@@ -1,10 +1,12 @@
 
-# SimPhy/NGSphy refselector
 *Reference selector*
 
 © 2017 Merly Escalona (<merlyescalona@uvigo.es>)
 
 University of Vigo, Spain, http://darwin.uvigo.es
+
+
+# SimPhy/NGSphy refselector
 
 For simulations of targeted-sequencing experiments under a known species/gene
 tree distribution, extracts the reference sequences that would have been used as
@@ -15,6 +17,11 @@ target in the probe desing.
 - We are working under a SimPhy - NGSphy simulation pipeline scenario.
 Meaning, it follows hierarchical SimPhy's folder structure and sequence
 labeling.
+
+To know more about the simulation pipeline scenario go to:
+
+- [SimPhy: A comprehensive simulator of gene family evolution ](https://github.com/adamallo/simphy)
+- [NGSphy: phylogenomic simulation of next-generation sequencing data](https://github.com/merlyescalona/ngsphy)
 
 # Input
 
