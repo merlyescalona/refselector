@@ -4,7 +4,7 @@ def readme():
         return f.read()
 long_description=''
 
-setup(name='ngsphy-refselector',\
+setup(name='refselector',\
     version='1.0.0',\
     description='',\
     long_description=long_description,\
@@ -13,10 +13,12 @@ setup(name='ngsphy-refselector',\
     author='Merly Escalona',\
     author_email='merlyescalona@uvigo.es',\
     license='GNU/GPL v3',\
-    packages=['ngsphy-refselector'],\
-    package_dir={'ngsphy-refselector': 'ngsphy-refselector'},\
-    py_modules = [\
-
+    packages=['refselector'],\
+    package_dir={'refselector': 'refselector'},\
+    py_modules=[\
+        'refselector.loggingformatter', \
+        'refselector.msatools', \
+        'refselector.refselector' \
     ],\
     install_requires=[\
         'argparse',\
@@ -25,8 +27,7 @@ setup(name='ngsphy-refselector',\
         'logging',\
         'numpy',\
         'setuptools',\
-        'scipy',\
-        'sqlite3'\
+        'scipy'
     ],\
     classifiers=[\
         'Development Status :: 4 - Beta',\
@@ -37,12 +38,12 @@ setup(name='ngsphy-refselector',\
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',\
         'Programming Language :: Python :: 2.7'\
     ],\
-    keywords='biology phylogenomics next-generation sequencing coverage targeted-sequencing',\
+    keywords='biology phylogenomics next-generation-sequencing reference-sequences targeted-sequencing',\
     python_requires='~=2.7',\
-    scripts=['scripts/ngsphy-refselector'],\
+    scripts=['bin/refselector'],\
     entry_points={
         'console_scripts':[\
-            'ngsphy-refselector = ngsphy-refselector.__main__:main'\
+            'refselector=refselector.__main__:main'\
         ]\
     },\
     zip_safe=False\

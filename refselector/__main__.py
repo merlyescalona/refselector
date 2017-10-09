@@ -11,6 +11,7 @@ PROGRAM_NAME="ngsphy-refselector"
 AUTHOR="Merly Escalona <merlyescalona@uvigo.es>"
 INSTITUTION="University of Vigo, Spain."
 LOG_LEVEL_CHOICES=["DEBUG","INFO","WARNING","ERROR"]
+LINE="--------------------------------------------------------------------------------"
 ################################################################################
 # python LociReferenceSelection.py -p <prefix> -SF <simphy_path> -o outout -m method
 ################################################################################
@@ -58,13 +59,15 @@ NGSphy - RefSelector
 \033[0m
 Description:
 ============
+
 For simulations of targeted-sequencing experiments under a known species/gene
 tree distribution, extracts the reference sequences that would have been used as
 target in the probe desing.
 
 Assumptions:
 ============
-- We are workning under a SimPhy - NGSphy simulation pipeline scenario.
+
+-We are working under a SimPhy - NGSphy simulation pipeline scenario.
 Meaning, it follows hierarchical SimPhy's folder structure and sequence
 labeling.
 
@@ -73,21 +76,24 @@ General:
 Specified method to obtain the reference loci used for the design of probes.
 Values range from 0-4 ( Default: (0)), where:
 
-	(0): Considers the outgroup sequence as the reference loci.
-	(1): Extracts a specific sequence per replicate (will need parameter -sdf/--seq-desc-file)
-	(2): Selects a random sequence from the ingroups.
-	(3): Selects randomly a specie and a consensus sequence of the sequences belonging to that species.
-	(4): Generates a consensus sequences from all the sequences involved.
+	(0): 	Considers the outgroup sequence as the reference loci.
+	(1): 	Extracts a specific sequence per locus
+		(will need parameter -sdf/--seq-desc-file)
+	(2): 	Selects a random sequence from the ingroups.
+	(3): 	Selects randomly a specie and generates a consensus sequence of the
+		sequences belonging to that species.
+	(4): 	Generates a consensus sequences from all the sequences involved.
 
-NOTE: The higher the method number, the longer it will take to generate the reference loci.
+NOTE: 	The higher the method number, the longer it will take to generate the
+	reference loci.
 
 Output:
 =======
 
-- The output will be a directory of FASTA files.
-- There should be as many FASTA files as replicates have been generated for the current SimPhy project.
-- Each file will contain all the selected loci.
-
+- 	The output will be a directory of FASTA files.
+- 	There should be as many FASTA files as replicates have been generated for
+	the current SimPhy project.
+- 	Each file will contain all the selected loci.
 		''',\
 			epilog="Version {0}.{1}.{2} (Still under development)".format(VERSION,MIN_VERSION,FIX_VERSION),\
 			add_help=False
@@ -107,7 +113,7 @@ Output:
 		help="Path where output will be written. ",\
 		required=True)
 	optionalGroup= parser.add_argument_group('Optional arguments')
-	optionalGroup.add_argument('-sdf','--seq-desc-file',metavar='<sequence_descriptions_file_path>', type=int,\
+	optionalGroup.add_argument('-sdf','--seq-desc-file',metavar='<sequence_descriptions_file_path>', type=str,\
 		help="When method = 4 has been selected, it is required to identify a file with the sequence descriptions, "+\
 		"used as identifiers, corresponding to the sequence that will be used as reference per replicate.")
 	optionalGroup.add_argument('-n','--nsize',metavar='<N_seq_size>', type=int,\
@@ -130,6 +136,10 @@ Output:
 	try:
 		tmpArgs = parser.parse_args()
 	except:
+		sys.stdout.write("\n\033[1m{}\033[0m\n".format(LINE))
+		APPLOGGER.error("Something happened while parsing the arguments.")
+		APPLOGGER.error("Please verify. Exiting.\n{}".format(LINE))
+
 		parser.print_help()
 		sys.exit(-1)
 	return tmpArgs
@@ -140,9 +150,9 @@ Output:
 def main():
 	try:
 		cmdArgs = handlingParameters()
-		print(cmdArgs)
-		prog = refselector.ReferenceSelection(cmdArgs)
 		APPLOGGER.setLevel(cmdArgs.log.upper())
+		APPLOGGER.debug("Args. introduced: {}".format(cmdArgs))
+		prog = refselector.ReferenceSelection(cmdArgs)
 		prog.run()
 	except refselector.NRSException as ex:
 	    if ex.expression:

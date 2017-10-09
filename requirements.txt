@@ -1,7 +1,7 @@
 argparse
-datetime
 ConfigParser
 datetime
+itertools
 logging
 numpy
 scipy

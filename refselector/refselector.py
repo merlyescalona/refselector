@@ -1,4 +1,4 @@
-import argparse,datetime,logging,os,sys, msatools, sqlite3
+import datetime,itertools,logging,os,sys, msatools, sqlite3,re, glob
 import numpy as np
 import random as rnd
 
@@ -37,9 +37,11 @@ class ReferenceSelection:
 		self.method=args.method
 		self.inputprefix=args.input_prefix
 		self.outputprefix=args.output_prefix
-		self.seqDescriptionFile=args.seq_desc_file
 		self.nsize=args.nsize
+		if args.seq_desc_file:
+			self.seqDescriptionFile=os.path.abspath(args.seq_desc_file)
 
+		########################################################################
 		# Checking correctness of the given paths
 		if (args.path[-1]=="/"):
 			self.projectName=os.path.basename(args.path[0:-1])
@@ -48,8 +50,10 @@ class ReferenceSelection:
 		self.path=os.path.abspath(args.path)
 		output=os.path.abspath(args.output)
 		outputFolderName=""
-		if (args.output[-1]=="/"): outputFolderName=os.path.basename(args.output[0:-1])
-		else: outputFolderName=os.path.basename(output)
+		if (args.output[-1]=="/"):
+			outputFolderName=os.path.basename(args.output[0:-1])
+		else:
+			outputFolderName=os.path.basename(output)
 		if (os.path.exists(output)):
 			listdir=os.listdir("{}".format(os.path.dirname(output)))
 			counter=0
@@ -57,10 +61,9 @@ class ReferenceSelection:
 				if outputFolderName in item:
 					counter+=1
 			if not counter == 0: outputFolderName+="_{0}".format(counter+1)
-		self.output=os.path.join(\
-			os.path.dirname(output),\
-			outputFolderName
-		)
+		self.output=os.path.join(os.path.dirname(output),outputFolderName)
+
+		########################################################################
 		# Generation of the output folder
 		try:
 			os.mkdir(self.output)
@@ -78,6 +81,7 @@ class ReferenceSelection:
 		APPLOGGER.info("Checking arguments...")
 		APPLOGGER.info("\tSimPhy...")
 		simphydir=os.path.exists(self.path)
+		########################################################################
 		if simphydir:
 			APPLOGGER.info("SimPhy folder exists:\t{0}".format(simphydir))
 		else:
@@ -92,7 +96,6 @@ class ReferenceSelection:
 		for index in range(0,len(fileList)):
 			fileList[index]=os.path.abspath(os.path.join(self.path,fileList[index]))
 		self.db = os.path.join(self.path,"{0}.db".format(self.projectName))
-		print(self.db)
 		if not self.db in fileList:
 			ex="SimPhy required file do not exist."
 			exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -102,7 +105,7 @@ class ReferenceSelection:
 				"Please verify. Exiting."\
 			)
 			raise NRSException(False, message, datetime.datetime.now()-self.startTime)
-		APPLOGGER.info("SimPhy data base exist:\t{0} ()".format(\
+		APPLOGGER.info("SimPhy data base exist:\t{0} ({1})".format(\
 			os.path.basename(self.db),self.db in fileList)
 		)
 		APPLOGGER.info("\tIdentifying replicates...")
@@ -112,6 +115,7 @@ class ReferenceSelection:
 			if (os.path.isdir(os.path.abspath(item)) and  baseitem.isdigit()):
 				self.numReplicates=self.numReplicates+1
 		self.numReplicatesDigits=len(str(self.numReplicates))
+		########################################################################
 		# check if at least one
 		if not (self.numReplicates>0):
 			ex="Number of replicates/folders:\t{0} [Required at least 1]".format(self.numReplicates>0)
@@ -124,11 +128,29 @@ class ReferenceSelection:
 			raise NRSException(False, message, datetime.datetime.now()-self.startTime)
 		APPLOGGER.info("\tDone!")
 		APPLOGGER.info("Number of replicates:\t{0}".format(self.numReplicates))
+		########################################################################
 		if self.nsize > -1:
 			APPLOGGER.info("Reference sequences will be concatenated.")
 		########################################################################
+		if self.method==1:
+			if not (os.path.exists(self.seqDescriptionFile) and os.path.isfile(self.seqDescriptionFile)):
+				message="{0}\n\t{1}".format(\
+					"Sequence description file does not exist.",\
+					"Please verify. Exiting."\
+				)
+				raise NRSException(False, message, datetime.datetime.now()-self.startTime)
+		########################################################################
 		self.getNumLociPerReplicate()
 		########################################################################
+		########################################################################
+		# sequence list initialization
+		########################################################################
+		replicateIndexes=[self.numLociPerReplicate[item]*[item+1] for item in range(0, self.numReplicates)]
+		replicateIndexes=[item for sublist in replicateIndexes for item in sublist]
+		lociIndexes=[range(1,self.numLociPerReplicate[item]+1) for item in range(0, self.numReplicates)]
+		lociIndexes=[item for sublist in lociIndexes for item in sublist]
+		seqs=["1_0_0"]*len(lociIndexes)
+		self.sequenceList=[ (replicateIndexes[index], lociIndexes[index], seqs[index]) for index in range(0,len(lociIndexes))]
 
 	def getNumLociPerReplicate(self):
 		query="select N_Loci from Species_Trees"
@@ -149,6 +171,7 @@ class ReferenceSelection:
 		lines=f.readlines()
 		f.close()
 		sizes=[ int(line.replace("[","").replace("]","").strip().split()[4]) for line in lines if "PARTITION" in line]
+		print(sizes)
 		startpos=0
 		bedfile=os.path.join(\
 			self.output,\
@@ -160,6 +183,8 @@ class ReferenceSelection:
 		)
 		outfile=open(bedfile,'a')
 		totalConcatSize=len(str(sum(sizes)+(self.nsize*len(sizes))))
+		sequenceListIndex=sum(self.numLociPerReplicate[0:repID-1])
+		if repID==1: sequenceListIndex=0
 		for locID in range(1,self.numLociPerReplicate[repID-1]+1):
 			endpos=startpos+sizes[locID-1]
 			chromField="{chrom:{align}0{fillChrom}d}".format(\
@@ -172,9 +197,11 @@ class ReferenceSelection:
 				endPOS=(endpos-1),\
 				posSIZE=int(str(totalConcatSize))\
 			)
-			nameField="{name:0{fillName}d}".format(\
+
+			nameField="{name:0{fillName}d}.{seqDescription}".format(\
 				name=locID,\
-				fillName=self.numLociPerReplicateDigits[repID-1]
+				fillName=self.numLociPerReplicateDigits[repID-1],\
+				seqDescription=self.sequenceList[sequenceListIndex][2]
 			)
 			outfile.write("Replicate{0}\t{1}\tLocus{2}\n".format(\
 				chromField,\
@@ -182,6 +209,7 @@ class ReferenceSelection:
 				nameField\
 			))
 			startpos=endpos+self.nsize
+			sequenceListIndex+=1
 		outfile.close()
 
 	def iterateOverReplicate(self):
@@ -192,14 +220,9 @@ class ReferenceSelection:
 				self.path,\
 				"{0:0{1}d}".format(repID, self.numReplicatesDigits),\
 			)
-			prefixLoci=0
-			fileList=os.listdir(curReplicatePath)
-			for item in fileList:
-				if ("{0}_".format(self.inputprefix) in item) and (".fasta" in item):
-					prefixLoci+=1
-			APPLOGGER.info("Method chosen: {0}")
-			if (self.nsize>-1): # only way I know sequences are concatenated
-				self.getBEDfile(repID)
+			fileList=glob.glob("{0}/{1}_*.fasta".format(curReplicatePath,self.inputprefix))
+			prefixLoci=len(fileList)
+			APPLOGGER.info("Method chosen: {0}".format(self.method))
 			####################################################################
 			if self.method==0:
 				self.methodOutgroup(repID)
@@ -209,7 +232,7 @@ class ReferenceSelection:
 					self.seqPerLocus(repID)
 				else:
 					message="{0}\n\t{1}".format(\
-						"Required file for method == 4.",\
+						"Required file for method 1.",\
 						"Please verify. Exiting."
 					)
 					raise NRSException(False, message, datetime.datetime.now()-self.startTime)
@@ -223,14 +246,17 @@ class ReferenceSelection:
 			if self.method==4:
 				self.methodConsensusAll(repID)
 
+			if (self.nsize>-1): # only way I know sequences are concatenated
+				self.getBEDfile(repID)
+
 
 	def writeLocus(self, repID,locID,description,sequence):
-		APPLOGGER.debug("Write Locis()")
+		APPLOGGER.debug("Write Loci()")
 		if self.nsize > -1:
 			APPLOGGER.debug("CONCAT")
 			self.concatSelectedLoci(repID,locID,description,sequence)
 		else:
-			APPLOGGER.debug("SEPARATE FILE")
+			APPLOGGER.debug("SEPARATE SEQUENCE")
 			self.writeSelectedLoci(repID,locID,description,sequence)
 
 	def methodOutgroup(self,repID):
@@ -243,8 +269,13 @@ class ReferenceSelection:
 		"""
 		APPLOGGER.debug("method outgroup")
 		description="0_0_0"
+		sequenceListIndex=sum(self.numLociPerReplicate[0:repID-1])
+		if repID==1: sequenceListIndex=0
 		for locID in range(1,self.numLociPerReplicate[repID-1]+1):
-			APPLOGGER.info("Loci {0}/{1}".format(locID,self.numLociPerReplicate[repID-1]))
+			APPLOGGER.info("Locus {0}/{1} | Table Index: {2}".format(locID,self.numLociPerReplicate[repID-1], sequenceListIndex))
+			mytuple=list(self.sequenceList[sequenceListIndex])
+			mytuple[2]=description
+			self.sequenceList[sequenceListIndex]=tuple(mytuple)
 			fastapath=os.path.join(\
 				self.path,\
 				"{0:0{1}d}".format(repID, self.numReplicatesDigits),\
@@ -253,54 +284,41 @@ class ReferenceSelection:
 			lociData=msatools.parseMSAFileWithDescriptions(fastapath)
 			selectedSequence=lociData[description]
 			self.writeLocus(repID,locID,description,selectedSequence)
+			sequenceListIndex+=1
 		APPLOGGER.info("Done outgroup sequence")
-
 
 	def seqPerLocus(self,repID):
 		"""
-		Method 4 for the selection of reference loci.
+		Method 1 for the selection of reference loci.
 		------------------------------------------------------------------------
 		This method selects a sequence per locus as indicated in the seq_desc_file.
 		Args: repID: Index of the species tree that is being used.
 		Returns: Nothing
 		"""
-		for locID in range(1,self.numLociPerReplicate[repID-1]+1):
-			APPLOGGER.info("Loci {0}/{1}".format(locID,self.numLociPerReplicate[repID-1]))
-			lociData=self.parseLocFile(repID,locID)
-			sequences=[] # [(description,seq)]
-			keys=lociData.keys()
-			for k in keys:
-				subkeys=lociData[k].keys() # Getting subkeys
-				rndKey1=0;
-				try:
-					rndKey1=rnd.sample(subkeys,1)[0]
-				except:
-					rndKey1=0
+		entries=self.parseReferenceLociFile(self.seqDescriptionFile)
+		for entry in entries:
+			repID=entry[0]
+			locID=entry[1]
+			seqID=entry[2]
+			APPLOGGER.info("Locus {0}/{1}".format(locID,self.numLociPerReplicate[repID-1]))
+			fastapath=os.path.join(
+				self.path,\
+				"{0:0{1}d}".format(repID, self.numReplicatesDigits),\
+				"{0}_{1:0{2}d}_TRUE.fasta".format(self.inputprefix,locID,self.numLociPerReplicateDigits[repID-1]),\
+			)
+			fastaFile=msatools.parseMSAFileWithDescriptions(fastapath)
+			sequence=""
+			try:
+				sequence=fastaFile[seqID]
+			except:
+				message="{0}\n\t{1}".format(\
+					"One of the selected sequences (description) has not been found on this file.",\
+					"Please verify. Exiting"
+				)
+				raise NRSException(False, message, datetime.datetime.now()-self.startTime)
 
-				selected=lociData[k][rndKey1]
-				sequences+=[(selected["description"], selected["sequence"])]
-			self.writeSelectedLociMultipleSpecies(repID,locID,sequences)
-		APPLOGGER.info("Done Seq Per Species")
-
-	def seqPerSpecies(self,repID):
-		for locID in range(1,self.numLociPerReplicate[repID-1]+1):
-			APPLOGGER.info("Loci {0}/{1}".format(locID,self.numLociPerReplicate[repID-1]))
-			lociData=self.parseLocFile(repID,locID)
-			sequences=[] # [(description,seq)]
-			keys=lociData.keys()
-			for k in keys:
-				subkeys=lociData[k].keys() # Getting subkeys
-				rndKey1=0;
-				try:
-					rndKey1=rnd.sample(subkeys,1)[0]
-				except:
-					rndKey1=0
-
-				selected=lociData[k][rndKey1]
-				sequences+=[(selected["description"], selected["sequence"])]
-			self.writeSelectedLociMultipleSpecies(repID,locID,sequences)
-		APPLOGGER.info("Done Seq Per Species")
-
+			self.writeLocus(repID,locID,seqID,sequence)
+		APPLOGGER.info("Done Seq Per locus")
 
 	def methodRandomIngroup(self,repID):
 		"""
@@ -311,13 +329,20 @@ class ReferenceSelection:
 		Args: repID: Index of the species tree that is being used.
 		Returns: Nothing
 		"""
+		sequenceListIndex=sum(self.numLociPerReplicate[0:repID-1])
+		if repID==1: sequenceListIndex=0
 		for locID in range(1,self.numLociPerReplicate[repID-1]+1):
-			APPLOGGER.info("Loci {0}/{1}".format(locID,self.numLociPerReplicate[repID-1]))
-			lociData=self.parseLocFile(repID,locID)
+			APPLOGGER.info("Locus {0}/{1} | Table Index: {2}".format(locID,self.numLociPerReplicate[repID-1], sequenceListIndex))
+			fastapath=os.path.join(\
+				self.path,\
+				"{0:0{1}d}".format(repID, self.numReplicatesDigits),\
+				"{0}_{1:0{2}d}.fasta".format(self.inputprefix,locID, self.numLociPerReplicateDigits[repID-1])\
+			)
+			lociData=msatools.parseMSAFile(fastapath)
 			keys=lociData.keys()
 			rndKey1="0"; rndKey2="0"
 			try:
-				rndKey1=rnd.sample(set(keys)-set("0"),1)[0]
+				rndKey1=rnd.sample(set(keys)-set("0_0"),1)[0]
 			except:
 				rndKey1="0"
 			subkeys=lociData[rndKey1]
@@ -326,7 +351,12 @@ class ReferenceSelection:
 			except:
 				rndKey2="0"
 			selected=lociData[rndKey1][rndKey2]
-			self.writeSelectedLoci(repID,locID,selected["description"],selected["sequence"])
+			print(self.sequenceList[sequenceListIndex])
+			mytuple=list(self.sequenceList[sequenceListIndex])
+			mytuple[2]="{0}_{1}".format(rndKey1,rndKey2)
+			self.sequenceList[sequenceListIndex]=tuple(mytuple)
+			self.writeLocus(repID,locID,selected["description"],selected["sequence"])
+			sequenceListIndex+=1
 		APPLOGGER.info("Done random ingroup sequence")
 
 	def methodConsensusRandomSpecies(self,repID):
@@ -339,25 +369,35 @@ class ReferenceSelection:
 		Args: repID: Index of the species tree that is being used.
 		Returns: Nothing
 		"""
+		sequenceListIndex=sum(self.numLociPerReplicate[0:repID-1])
+		if repID==1: sequenceListIndex=0
 		for locID in range(1,self.numLociPerReplicate[repID-1]+1):
-			APPLOGGER.info("Loci {0}/{1}".format(locID,self.numLociPerReplicate[repID-1]))
-			lociData=self.parseLocFile(repID,locID)
+			APPLOGGER.info("Locus {0}/{1} | Table Index: {2}".format(locID,self.numLociPerReplicate[repID-1], sequenceListIndex))
+			fastapath=os.path.join(\
+				self.path,\
+				"{0:0{1}d}".format(repID, self.numReplicatesDigits),\
+				"{0}_{1:0{2}d}.fasta".format(self.inputprefix,locID, self.numLociPerReplicateDigits[repID-1])\
+			)
+			lociData=msatools.parseMSAFile(fastapath)
 			keys=lociData.keys()
 			rndKey1=0; rndKey2=0
 			try:
-				rndKey1=rnd.sample(set(keys)-set("0"),1)[0]
+				rndKey1=rnd.sample(set(keys)-set("0_0"),1)[0]
 			except:
 				rndKey1=0
 			subkeys=lociData[rndKey1]
 			sequences=[]
+			self.sequenceList[sequenceListIndex]
 			for sk in subkeys:
 				sequences+=[lociData[rndKey1][sk]["sequence"]]
+			mytuple=list(self.sequenceList[sequenceListIndex])
+			mytuple[2]="{0}_CONSENSUS_RND_SP".format(rndKey1)
+			self.sequenceList[sequenceListIndex]=tuple(mytuple)
 			selected=self.computeConsensus(sequences)
 			selectedDes=">consensus_sp_{0}".format(rndKey1)
-			self.writeSelectedLoci(repID,locID,selectedDes,selected)
+			self.writeLocus(repID,locID,selectedDes,selected)
+			sequenceListIndex+=1
 		APPLOGGER.info("Done random ingroup consensus")
-
-
 
 	def methodConsensusAll(self,repID):
 		"""
@@ -368,17 +408,27 @@ class ReferenceSelection:
 		Args: repID: Index of the species tree that is being used.
 		Returns: Nothing
 		"""
+
+		sequenceListIndex=sum(self.numLociPerReplicate[0:repID-1])
+		if repID==1: sequenceListIndex=0
 		for locID in range(1,self.numLociPerReplicate[repID-1]+1):
-			APPLOGGER.info("Loci {0}/{1}".format(locID,self.numLociPerReplicate[repID-1]))
-			lociData=self.parseLocFile(repID,locID)
-			keys=set(lociData.keys())-set("0")
+			APPLOGGER.info("Locus {0}/{1} | Table Index: {2}".format(locID,self.numLociPerReplicate[repID-1], sequenceListIndex))
+			fastapath=os.path.join(\
+				self.path,\
+				"{0:0{1}d}".format(repID, self.numReplicatesDigits),\
+				"{0}_{1:0{2}d}.fasta".format(self.inputprefix,locID, self.numLociPerReplicateDigits[repID-1])\
+			)
+			lociData=msatools.parseMSAFileWithDescriptions(fastapath)
+			keys=set(lociData.keys())
 			sequences=[]
 			for mk in keys:
-				subkeys=lociData[mk].keys()
-				for sk in subkeys:
-					sequences+=[lociData[mk][sk]["sequence"]]
+				sequences+=[lociData[mk]]
 			selected=self.computeConsensus(sequences)
-			self.writeSelectedLoci(repID,locID,">consensus_all",selected)
+			self.writeLocus(repID,locID,">consensus_all",selected)
+			mytuple=list(self.sequenceList[sequenceListIndex])
+			mytuple[2]="{0}_CONSENSUS_ALL".format(rndKey1)
+			self.sequenceList[sequenceListIndex]=tuple(mytuple)
+			sequenceListIndex+=1
 		APPLOGGER.info("Done all ingroups consensus")
 
 
@@ -464,6 +514,43 @@ class ReferenceSelection:
 			outfile.write("{0}\n{1}\n".format(newDes,nucSeq))
 		outfile.close()
 
+	def parseReferenceLociFile(self, filename):
+		"""
+		Used to parse sequenceList, file with format: STID,LOCID,TIPLABEL
+		-----------------------------------------------------------------------
+		Parameters:
+		- filename: path of the sequenceList file.
+		There's only ONE file with the relation of the ref_alleles
+		If "None" inputted (file is missing) then reference by default is 1_0_0
+		for all species tree replicates.
+		Returns:
+		- output: list. each element of the list is a triplet
+				(REPLICATEID,sequence_tip_label )
+				replicate_ID    locus_ID    sequence_description_locus
+		"""
+		APPLOGGER.info("Retrieving identifiers of the reference alleles...")
+		filepath=os.path.abspath(filename)
+		if os.path.exists(filepath):
+			# There's a file
+			lines=None
+			with open(filepath) as f:
+				lines=[line.strip().split() for line in f if (not line.strip()=="") and (len(line.strip().split())==3)]
+			print lines
+			lines=sorted(lines, key=lambda x:(x[1],x[2]))
+			skipped=False
+			message="Parsing reference list. "+\
+				"A default reference has been introduced.\n"+\
+				"Replicate index:"
+
+			for i in range(0,len(self.sequenceList)):
+				for j in range(0,len(lines)):
+					if  (not lines[j][0] == "") and \
+						(not lines[j][1] == "") and \
+						(not lines[j][2] == "") and \
+						(lines[i][0]==self.sequenceList[j][0] and lines[i][1]==self.sequenceList[j][1]) and \
+						bool(re.match("^([1-9]+_[0-9]+_[0-9]+){1}",lines[i][3])):
+						self.sequenceList[j][3]=lines[i][3]
+		return self.sequenceList
 
 	def concatSelectedLoci(self,repID,locID,description,sequence):
 		"""
@@ -482,19 +569,20 @@ class ReferenceSelection:
 			self.outputprefix,\
 			repID, self.numReplicatesDigits
 		)
-		nsequence="N"*self.nsize
+		nsequence="".join("N" for item in range(0,self.nsize))
 		# I'm assuming that if the file does not exist it will be created
+		fullseq="{0}{1}".format(sequence,str(nsequence))
 		if os.path.exists(outname):
 			with open(outname, 'a+') as f:
 				f.seek(-1,2)
 				if locID == self.numLociPerReplicate[repID-1]:
 					f.write('\n'.encode())
 				else:
-					f.write('{0}{1}'.format(sequence,nsequence).encode())
+					f.write(fullseq.encode())
 		else:
-			f=open(outname,"w")
-			f.write(">{0}\n{1}".format(description, sequence))
-
+			f=open(outname,"a+")
+			f.write(">{0}\n{1}".format(description, fullseq))
+			f.close()
 
 	def writeSelectedLoci(self,repID,locID,des,seq):
 		"""
@@ -539,4 +627,4 @@ class ReferenceSelection:
 		"""
 		self.checkArgs()
 		self.iterateOverReplicate()
-		raise NRSException(True,"", datetime.datetime.now()-self.startTime )
+		raise NRSException(True,"",datetime.datetime.now()-self.startTime)
