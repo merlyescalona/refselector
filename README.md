@@ -14,7 +14,7 @@ target in the probe desing.
 
 # Assumptions
 
-- We are working under a [SimPhy](https://github.com/adamallo/simphy) - [NGSphy]https://github.com/merlyescalona/ngsphy simulation pipeline scenario.
+- We are working under a [SimPhy](https://github.com/adamallo/simphy) - [NGSphy](https://github.com/merlyescalona/ngsphy) simulation pipeline scenario.
 Meaning, it follows hierarchical [SimPhy](https://github.com/adamallo/simphy) 's folder structure and sequence
 labeling.
 
