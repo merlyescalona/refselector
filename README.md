@@ -14,8 +14,8 @@ target in the probe desing.
 
 # Assumptions
 
-- We are working under a SimPhy - NGSphy simulation pipeline scenario.
-Meaning, it follows hierarchical SimPhy's folder structure and sequence
+- We are working under a [SimPhy](https://github.com/adamallo/simphy) - [NGSphy]https://github.com/merlyescalona/ngsphy simulation pipeline scenario.
+Meaning, it follows hierarchical [SimPhy](https://github.com/adamallo/simphy) 's folder structure and sequence
 labeling.
 
 To know more about the simulation pipeline scenario go to:
@@ -25,8 +25,8 @@ To know more about the simulation pipeline scenario go to:
 
 # Input
 
-- SimPhy folder path
-- prefix of the existing FASTA files
+- [SimPhy](https://github.com/adamallo/simphy) folder path
+- prefix of the existing [FASTA](https://en.wikipedia.org/wiki/FASTA_format) files
 - prefix for the output files
 - method indicating how to obtain the reference sequences
 - (optional) file with the description of the sequences that will be used as reference
@@ -34,8 +34,8 @@ To know more about the simulation pipeline scenario go to:
 
 # Output
 
-- The output will be a directory of FASTA files
-- There should be as many FASTA files as replicates have been generated for the current SimPhy project
+- The output will be a directory of [FASTA](https://en.wikipedia.org/wiki/FASTA_format) files
+- There should be as many [FASTA](https://en.wikipedia.org/wiki/FASTA_format) files as replicates have been generated for the current [SimPhy](https://github.com/adamallo/simphy) project
 - Each file will contain all the selected loci, either concatenated or as a multiple alignment file
 
 # Documentation
