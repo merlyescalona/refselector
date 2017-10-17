@@ -24,6 +24,7 @@ class ReferenceSelection:
 	numLociPerReplicateDigits=[]
 	numReplicates=0
 	numReplicatesDigits=0
+	ploidy=1
 	db="" # Path of the SimPhy DB
 
 	def __init__(self, args):
@@ -62,6 +63,15 @@ class ReferenceSelection:
 					counter+=1
 			if not counter == 0: outputFolderName+="_{0}".format(counter+1)
 		self.output=os.path.join(os.path.dirname(output),outputFolderName)
+		if args.ploidy in [1,2]:
+			self.ploidy=args.ploidy
+		else:
+			parserMessageWrong="\n\t{0}\n\t{1}\n\t{2}".format(\
+				"Ploidy value is out of range.",\
+				"Value must be in [1,2].",\
+				"Please verify. Exiting."\
+			)
+			raise NRSException(False, message, datetime.datetime.now()-self.startTime)
 
 		########################################################################
 		# Generation of the output folder
@@ -213,43 +223,62 @@ class ReferenceSelection:
 			sequenceListIndex+=1
 		outfile.close()
 
+
+	def filterReplicatesMatchingIndPerSpeciesAndPloidy(self, ploidy):
+		"""
+		Identifies and filters the species tree replicates that  SimPhy
+		database.
+		------------------------------------------------------------------------
+		Returns: a list with the number of loci per species tree replicate
+		"""
+		query="select SID from Species_Trees"
+		if not (ploidy == 1):
+			query="select SID from Species_Trees WHERE Ind_per_sp % {0} = 0".format(ploidy)
+		con = sqlite3.connect(self.db)
+		res=con.execute(query).fetchall()
+		con.close()
+		res=[item for sublist in res for item in sublist]
+		return res
+
 	def iterateOverReplicate(self):
 		APPLOGGER.debug("IterateOverReplicate")
+		filtered=self.filterReplicatesMatchingIndPerSpeciesAndPloidy(self.ploidy)
 		for index in range(0, self.numReplicates):
 			repID=index+1
-			APPLOGGER.debug("Replicate {0}/{1} ".format(repID, self.numReplicates))
-			curReplicatePath=os.path.join(\
-				self.path,\
-				"{0:0{1}d}".format(repID, self.numReplicatesDigits),\
-			)
-			fileList=glob.glob("{0}/{1}_*.fasta".format(curReplicatePath,self.inputprefix))
-			prefixLoci=len(fileList)
-			APPLOGGER.info("Method chosen: {0}".format(self.method))
-			####################################################################
-			if self.method==0:
-				self.methodOutgroup(index)
-			####################################################################
-			if self.method==1:
-				if not self.seqDescriptionFile == "":
-					self.seqPerLocus(index)
-				else:
-					message="{0}\n\t{1}".format(\
-						"Required file for method 1.",\
-						"Please verify. Exiting."
-					)
-					raise NRSException(False, message, datetime.datetime.now()-self.startTime)
-			####################################################################
-			if self.method==2:
-				self.methodRandomIngroup(index)
-			####################################################################
-			if self.method==3:
-				self.methodConsensusRandomSpecies(index)
-			####################################################################
-			if self.method==4:
-				self.methodConsensusAll(index)
+			if index in filtered:
+				APPLOGGER.debug("Replicate {0}/{1} ".format(repID, self.numReplicates))
+				curReplicatePath=os.path.join(\
+					self.path,\
+					"{0:0{1}d}".format(repID, self.numReplicatesDigits),\
+				)
+				fileList=glob.glob("{0}/{1}_*.fasta".format(curReplicatePath,self.inputprefix))
+				prefixLoci=len(fileList)
+				APPLOGGER.info("Method chosen: {0}".format(self.method))
+				####################################################################
+				if self.method==0:
+					self.methodOutgroup(index)
+				####################################################################
+				if self.method==1:
+					if not self.seqDescriptionFile == "":
+						self.seqPerLocus(index)
+					else:
+						message="{0}\n\t{1}".format(\
+							"Required file for method 1.",\
+							"Please verify. Exiting."
+						)
+						raise NRSException(False, message, datetime.datetime.now()-self.startTime)
+				####################################################################
+				if self.method==2:
+					self.methodRandomIngroup(index)
+				####################################################################
+				if self.method==3:
+					self.methodConsensusRandomSpecies(index)
+				####################################################################
+				if self.method==4:
+					self.methodConsensusAll(index)
 
-			if (self.nsize>-1): # only way I know sequences are concatenated
-				self.getBEDfile(index)
+				if (self.nsize>-1): # only way I know sequences are concatenated
+					self.getBEDfile(index)
 
 
 	def writeLocus(self, index,locID,description,sequence):

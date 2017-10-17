@@ -99,8 +99,10 @@ Output:
 			add_help=False
 		)
 	requiredGroup= parser.add_argument_group('Required arguments')
-	requiredGroup.add_argument('-p','--path',metavar='<path>', type=str,\
+	requiredGroup.add_argument('-s','--simphy-path',metavar='<path>', type=str,\
 		help='Path of the SimPhy folder.', required=True)
+	requiredGroup.add_argument('-p','--ploidy',metavar='<ploidy>', type=int,\
+		help='Ploidy used for the dataset.', required=True, choices=[1,2], default=1)
 	requiredGroup.add_argument('-ip','--input-prefix', metavar='<input_prefix>', type=str,\
 		help='Prefix of the FASTA filenames.', required=True)
 	requiredGroup.add_argument('-op','--output-prefix', metavar='<output_prefix>', type=str,\
