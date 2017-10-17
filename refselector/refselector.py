@@ -182,7 +182,6 @@ class ReferenceSelection:
 		lines=f.readlines()
 		f.close()
 		sizes=[ int(line.replace("[","").replace("]","").strip().split()[4]) for line in lines if "PARTITION" in line]
-		print(sizes)
 		startpos=0
 		bedfile=os.path.join(\
 			self.output,\
@@ -384,7 +383,7 @@ class ReferenceSelection:
 			except:
 				rndKey2="0"
 			selected=lociData[rndKey1][rndKey2]
-			print(self.sequenceList[sequenceListIndex])
+			# print(self.sequenceList[sequenceListIndex])
 			mytuple=list(self.sequenceList[sequenceListIndex])
 			mytuple[2]="{0}_{1}".format(rndKey1,rndKey2)
 			self.sequenceList[sequenceListIndex]=tuple(mytuple)
@@ -570,7 +569,7 @@ class ReferenceSelection:
 			lines=None
 			with open(filepath) as f:
 				lines=[line.strip().split() for line in f if (not line.strip()=="") and (len(line.strip().split())==3)]
-			print lines
+			# print lines
 			lines=sorted(lines, key=lambda x:(x[1],x[2]))
 			skipped=False
 			message="Parsing reference list. "+\
