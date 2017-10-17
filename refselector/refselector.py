@@ -245,7 +245,7 @@ class ReferenceSelection:
 		filtered=self.filterReplicatesMatchingIndPerSpeciesAndPloidy(self.ploidy)
 		for index in range(0, self.numReplicates):
 			repID=index+1
-			if index in filtered:
+			if repID in filtered:
 				APPLOGGER.debug("Replicate {0}/{1} ".format(repID, self.numReplicates))
 				curReplicatePath=os.path.join(\
 					self.path,\
