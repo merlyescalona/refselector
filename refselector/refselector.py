@@ -44,11 +44,11 @@ class ReferenceSelection:
 
 		########################################################################
 		# Checking correctness of the given paths
-		if (args.path[-1]=="/"):
-			self.projectName=os.path.basename(args.path[0:-1])
+		if (args.simphy_path[-1]=="/"):
+			self.projectName=os.path.basename(args.simphy_path[0:-1])
 		else:
-			self.projectName=os.path.basename(args.path)
-		self.path=os.path.abspath(args.path)
+			self.projectName=os.path.basename(args.simphy_path)
+		self.path=os.path.abspath(args.simphy_path)
 		output=os.path.abspath(args.output)
 		outputFolderName=""
 		if (args.output[-1]=="/"):
