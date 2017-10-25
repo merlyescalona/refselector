@@ -218,7 +218,7 @@ class ReferenceSelection:
 				positions,\
 				nameField\
 			))
-			startpos=endpos+self.nsize
+			startpos=endpos+(self.nsize-1)
 			sequenceListIndex+=1
 		outfile.close()
 
@@ -253,6 +253,7 @@ class ReferenceSelection:
 				fileList=glob.glob("{0}/{1}_*.fasta".format(curReplicatePath,self.inputprefix))
 				prefixLoci=len(fileList)
 				APPLOGGER.info("Method chosen: {0}".format(self.method))
+				print (self.numLociPerReplicateDigits)
 				####################################################################
 				if self.method==0:
 					self.methodOutgroup(index)
