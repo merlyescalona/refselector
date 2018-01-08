@@ -1,0 +1,3 @@
+[console_scripts]
+refselector = refselector.__main__:main
+

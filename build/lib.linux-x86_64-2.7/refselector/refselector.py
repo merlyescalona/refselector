@@ -44,11 +44,11 @@ class ReferenceSelection:
 
 		########################################################################
 		# Checking correctness of the given paths
-		if (args.simphy_path[-1]=="/"):
-			self.projectName=os.path.basename(args.simphy_path[0:-1])
+		if (args.path[-1]=="/"):
+			self.projectName=os.path.basename(args.path[0:-1])
 		else:
-			self.projectName=os.path.basename(args.simphy_path)
-		self.path=os.path.abspath(args.simphy_path)
+			self.projectName=os.path.basename(args.path)
+		self.path=os.path.abspath(args.path)
 		output=os.path.abspath(args.output)
 		outputFolderName=""
 		if (args.output[-1]=="/"):
@@ -182,6 +182,7 @@ class ReferenceSelection:
 		lines=f.readlines()
 		f.close()
 		sizes=[ int(line.replace("[","").replace("]","").strip().split()[4]) for line in lines if "PARTITION" in line]
+		print(sizes)
 		startpos=0
 		bedfile=os.path.join(\
 			self.output,\
@@ -218,7 +219,7 @@ class ReferenceSelection:
 				positions,\
 				nameField\
 			))
-			startpos=endpos+(self.nsize-1)
+			startpos=endpos+self.nsize
 			sequenceListIndex+=1
 		outfile.close()
 
@@ -244,7 +245,7 @@ class ReferenceSelection:
 		filtered=self.filterReplicatesMatchingIndPerSpeciesAndPloidy(self.ploidy)
 		for index in range(0, self.numReplicates):
 			repID=index+1
-			if repID in filtered:
+			if index in filtered:
 				APPLOGGER.debug("Replicate {0}/{1} ".format(repID, self.numReplicates))
 				curReplicatePath=os.path.join(\
 					self.path,\
@@ -253,7 +254,6 @@ class ReferenceSelection:
 				fileList=glob.glob("{0}/{1}_*.fasta".format(curReplicatePath,self.inputprefix))
 				prefixLoci=len(fileList)
 				APPLOGGER.info("Method chosen: {0}".format(self.method))
-				print (self.numLociPerReplicateDigits)
 				####################################################################
 				if self.method==0:
 					self.methodOutgroup(index)
@@ -277,9 +277,6 @@ class ReferenceSelection:
 				if self.method==4:
 					self.methodConsensusAll(index)
 
-				if self.method==5:
-					self.methodOneRandomIngroup(index)
-
 				if (self.nsize>-1): # only way I know sequences are concatenated
 					self.getBEDfile(index)
 
@@ -292,50 +289,6 @@ class ReferenceSelection:
 		else:
 			APPLOGGER.debug("SEPARATE SEQUENCE")
 			self.writeSelectedLoci(index,locID,description,sequence)
-
-	def methodOneRandomIngroup(self,index):
-		"""
-		Method 0 for the selection of reference loci.
-		This method selects the outgroup as a reference locus.
-		------------------------------------------------------------------------
-		attributes: repID: Index of the species tree that is being used.
-		returns: Nothing
-		"""
-		APPLOGGER.debug("method outgroup")
-		description0="0_0_0"
-		repID=index+1
-		sequenceListIndex=sum(self.numLociPerReplicate[0:index])
-		if index==0: sequenceListIndex=0
-
-		locID=1
-		fastapath=os.path.join(\
-			self.path,\
-			"{0:0{1}d}".format(repID, self.numReplicatesDigits),\
-			"{0}_{1:0{2}d}.fasta".format(self.inputprefix,locID, self.numLociPerReplicateDigits[index])\
-		)
-		lociData=msatools.parseMSAFileWithDescriptions(fastapath)
-		descriptions=set(lociData.keys()-set(description0))
-		description="1_0_0"
-		try:
-			description=rnd.choice(descriptions)[0]
-		except:
-			description="1_0_0"
-
-		for locID in range(1,self.numLociPerReplicate[index]+1):
-			APPLOGGER.info("Locus {0}/{1} | Table Index: {2}".format(locID,self.numLociPerReplicate[index], sequenceListIndex))
-			mytuple=list(self.sequenceList[sequenceListIndex])
-			mytuple[2]=description
-			self.sequenceList[sequenceListIndex]=tuple(mytuple)
-			fastapath=os.path.join(\
-				self.path,\
-				"{0:0{1}d}".format(repID, self.numReplicatesDigits),\
-				"{0}_{1:0{2}d}.fasta".format(self.inputprefix,locID, self.numLociPerReplicateDigits[index])\
-			)
-			lociData=msatools.parseMSAFileWithDescriptions(fastapath)
-			selectedSequence=lociData[description]
-			self.writeLocus(index,locID,description,selectedSequence)
-			sequenceListIndex+=1
-		APPLOGGER.info("Done outgroup sequence")
 
 	def methodOutgroup(self,index):
 		"""
@@ -431,7 +384,7 @@ class ReferenceSelection:
 			except:
 				rndKey2="0"
 			selected=lociData[rndKey1][rndKey2]
-			# print(self.sequenceList[sequenceListIndex])
+			print(self.sequenceList[sequenceListIndex])
 			mytuple=list(self.sequenceList[sequenceListIndex])
 			mytuple[2]="{0}_{1}".format(rndKey1,rndKey2)
 			self.sequenceList[sequenceListIndex]=tuple(mytuple)
@@ -617,7 +570,7 @@ class ReferenceSelection:
 			lines=None
 			with open(filepath) as f:
 				lines=[line.strip().split() for line in f if (not line.strip()=="") and (len(line.strip().split())==3)]
-			# print lines
+			print lines
 			lines=sorted(lines, key=lambda x:(x[1],x[2]))
 			skipped=False
 			message="Parsing reference list. "+\

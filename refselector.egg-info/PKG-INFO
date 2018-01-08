@@ -1,0 +1,21 @@
+Metadata-Version: 1.2
+Name: refselector
+Version: 1.0.1
+Summary: UNKNOWN
+Home-page: https://github.com/merlyescalona/refselector
+Author: Merly Escalona
+Author-email: merlyescalona@uvigo.es
+License: GNU/GPL v3
+Download-URL: https://github.com/merlyescalona/refselector/blob/master/dist/refselector.1.0.1.tar.gz
+Description-Content-Type: UNKNOWN
+Description: UNKNOWN
+Keywords: biology phylogenomics next-generation-sequencing reference-sequences targeted-sequencing
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Education
+Classifier: Intended Audience :: Science/Research
+Classifier: Intended Audience :: Developers
+Classifier: Topic :: Scientific/Engineering :: Bio-Informatics
+Classifier: License :: OSI Approved :: GNU General Public License v3 (GPLv3)
+Classifier: Programming Language :: Python :: 2.7
+Requires-Python: ~=2.7

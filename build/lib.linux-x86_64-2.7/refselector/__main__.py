@@ -6,7 +6,7 @@ import random as rnd
 # CONSTANTS
 VERSION=1
 MIN_VERSION=0
-FIX_VERSION=1
+FIX_VERSION=0
 PROGRAM_NAME="ngsphy-refselector"
 AUTHOR="Merly Escalona <merlyescalona@uvigo.es>"
 INSTITUTION="University of Vigo, Spain."
@@ -79,11 +79,11 @@ Values range from 0-4 ( Default: (0)), where:
 	(0): 	Considers the outgroup sequence as the reference loci.
 	(1): 	Extracts a specific sequence per locus
 		(will need parameter -sdf/--seq-desc-file)
-	(2): 	Selects a random sequence from the ingroups. Different sequence per locus.
+	(2): 	Selects a random sequence from the ingroups.
 	(3): 	Selects randomly a specie and generates a consensus sequence of the
 		sequences belonging to that species.
 	(4): 	Generates a consensus sequences from all the sequences involved.
-	(5): 	Selects a random sequence from the ingroups. Same sequence throughout the loci.
+
 NOTE: 	The higher the method number, the longer it will take to generate the
 	reference loci.
 
@@ -108,7 +108,7 @@ Output:
 	requiredGroup.add_argument('-op','--output-prefix', metavar='<output_prefix>', type=str,\
 		help='Prefix for the output filename.', required=True)
 	requiredGroup.add_argument('-m','--method', metavar="<method_code>",type=int,\
-		choices=range(0,6), default=0,\
+		choices=range(0,5), default=0,\
 		help="Specified method to obtain the reference loci used for the design of probes. Values range from 0-4.",\
         required=True)
 	requiredGroup.add_argument('-o','--output', metavar="<output_path>",type=str,\

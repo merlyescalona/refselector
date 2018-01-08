@@ -5,11 +5,11 @@ def readme():
 long_description=''
 
 setup(name='refselector',\
-    version='1.0.0',\
+    version='1.0.1',\
     description='',\
     long_description=long_description,\
     url='https://github.com/merlyescalona/refselector',\
-    download_url='https://github.com/merlyescalona/refselector/blob/master/dist/refselector.1.0.0.tar.gz',\
+    download_url='https://github.com/merlyescalona/refselector/blob/master/dist/refselector.1.0.1.tar.gz',\
     author='Merly Escalona',\
     author_email='merlyescalona@uvigo.es',\
     license='GNU/GPL v3',\

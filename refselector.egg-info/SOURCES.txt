@@ -1,0 +1,17 @@
+MANIFEST.in
+README.md
+setup.cfg
+setup.py
+bin/refselector
+refselector/__init__.py
+refselector/__main__.py
+refselector/loggingformatter.py
+refselector/msatools.py
+refselector/refselector.py
+refselector.egg-info/PKG-INFO
+refselector.egg-info/SOURCES.txt
+refselector.egg-info/dependency_links.txt
+refselector.egg-info/entry_points.txt
+refselector.egg-info/not-zip-safe
+refselector.egg-info/requires.txt
+refselector.egg-info/top_level.txt
