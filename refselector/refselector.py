@@ -677,7 +677,7 @@ class ReferenceSelection:
 		newDes=">{0:0{1}d}:{2}".format(\
 			locID,\
 			self.numLociPerReplicateDigits[repID-1],\
-			des[1:len(des)]
+			des\
 		)
 		# I'm assuming that if the file does not exist it will be created
 		outfile=open(outname,'a')
