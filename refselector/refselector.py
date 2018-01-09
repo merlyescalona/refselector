@@ -575,15 +575,10 @@ class ReferenceSelection:
 		for item in range(0,len(seqs)):
 			des=seqs[item][0]
 			nucSeq=seqs[item][1]
-			newDes=">{0}:{1:0{2}d}:REF:{7}:{6}:{3:0{4}d}:{5}".format(\
-				self.projectName,\
-				repID,\
-				self.numReplicatesDigits,\
+			newDes=">{0:0{1}d}:{2}".format(\
 				locID,\
 				self.numLociPerReplicateDigits[index],\
-				des[1:len(des)],\
-				self.inputprefix,\
-				self.outputprefix
+				des[1:len(des)]
 			)
 			outfile.write("{0}\n{1}\n".format(newDes,nucSeq))
 		outfile.close()
@@ -674,15 +669,12 @@ class ReferenceSelection:
 		APPLOGGER.info("Writing selected loci {1} from ST: {0}", repID,locID)
 		outname=os.path.join(\
 			self.output,\
-			"{0}_{1:0{2}d}_{3:0{4}d}.split.fasta".format(\
+			"{0}_{1:0{2}d}.split.fasta".format(\
 				self.outputprefix,\
-				repID,self.numReplicatesDigits,\
-				locID, self.numLociPerReplicateDigits[repID-1]
+				repID,self.numReplicatesDigits\
 			)
 		)
-		newDes=">{0:0{1}d}:{2:0{3}d}:{4}".format(\
-			repID,\
-			self.numReplicatesDigits,\
+		newDes=">{0:0{1}d}:{2}".format(\
 			locID,\
 			self.numLociPerReplicateDigits[repID-1],\
 			des[1:len(des)]
