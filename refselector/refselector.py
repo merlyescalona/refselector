@@ -666,14 +666,15 @@ class ReferenceSelection:
 			- Generates a file per selected locus.
 		"""
 		repID=index+1
-		APPLOGGER.info("Writing selected loci {1} from ST: {0}", repID,locID)
 		outname=os.path.join(\
 			self.output,\
 			"{0}_{1:0{2}d}.split.fasta".format(\
 				self.outputprefix,\
-				repID,self.numReplicatesDigits\
+				repID,\
+				self.numReplicatesDigits\
 			)
 		)
+		APPLOGGER.info("Writing selected loci {1} from ST {0} into file: ", repID,locID, outname)
 		newDes=">Locus{0:0{1}d}:{2}".format(\
 			locID,\
 			self.numLociPerReplicateDigits[repID-1],\
