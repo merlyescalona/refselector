@@ -80,12 +80,6 @@ class ReferenceSelection:
 			APPLOGGER.info("Generating output folder:\t{}".format(self.output))
 		except:
 			APPLOGGER.info("Output folder ({0}) exists. ".format(self.output))
-		if  self.nsize > -1:
-			try:
-				os.mkdir(os.path.join(self.output, "bed"))
-				APPLOGGER.info("Generating output folder:\t{}".format(os.path.join(self.output, "bed")))
-			except:
-				APPLOGGER.info("Output folder ({0}) exists. ".format(os.path.join(self.output, "bed")))
 
 	def checkArgs(self):
 		APPLOGGER.info("Checking arguments...")
@@ -185,7 +179,6 @@ class ReferenceSelection:
 		startpos=0
 		bedfile=os.path.join(\
 			self.output,\
-			"bed",\
 			"{0}_{1:0{2}d}.bed".format(\
 				self.outputprefix,\
 				repID,self.numReplicatesDigits\
