@@ -631,12 +631,14 @@ class ReferenceSelection:
 			self.output,\
 			"{0}_{1:0{2}d}.fasta".format(\
 				self.outputprefix,\
-				repID,self.numReplicatesDigits
+				repID,\
+				self.numReplicatesDigits\
 			)
 		)
 		newDes=">{0}:{1:0{2}d}".format(\
 			self.projectName,\
-			repID, self.numReplicatesDigits
+			repID,\
+			self.numReplicatesDigits\
 		)
 		nsequence="".join("N" for item in range(0,self.nsize))
 		# I'm assuming that if the file does not exist it will be created
@@ -674,7 +676,7 @@ class ReferenceSelection:
 				self.numReplicatesDigits\
 			)
 		)
-		APPLOGGER.info("Writing selected loci {1} from ST {0} into file: ", repID,locID, outname)
+		APPLOGGER.info("Writing selected loci {1} from ST {0} into file: {2} ", repID,locID, outname)
 		newDes=">Locus{0:0{1}d}:{2}".format(\
 			locID,\
 			self.numLociPerReplicateDigits[repID-1],\
