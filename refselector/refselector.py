@@ -190,10 +190,13 @@ class ReferenceSelection:
 		if repID==1: sequenceListIndex=0
 		for locID in range(1,self.numLociPerReplicate[repID-1]+1):
 			endpos=startpos+sizes[locID-1]
-			chromField="{chrom:{align}0{fillChrom}d}".format(\
-				align="<",\
-				chrom=repID,\
-				fillChrom=self.numReplicatesDigits)
+			# chromField="{chrom:{align}0{fillChrom}d}".format(\
+			# 	align="<",\
+			# 	chrom=repID,\
+			# 	fillChrom=self.numReplicatesDigits)
+			chromField="{name:0{fillName}d}".format(\
+				name=locID,\
+				fillName=self.numLociPerReplicateDigits[repID-1])
 			positions="{startPOS:{align}{posSIZE}}\t{endPOS:{align}{posSIZE}}".format(\
 				align=">",\
 				startPOS=startpos,\
@@ -206,7 +209,7 @@ class ReferenceSelection:
 				fillName=self.numLociPerReplicateDigits[repID-1],\
 				seqDescription=self.sequenceList[sequenceListIndex][2]
 			)
-			outfile.write("Replicate{0}\t{1}\tLocus{2}\n".format(\
+			outfile.write("Locus{0}\t{1}\tLocus{2}\n".format(\
 				chromField,\
 				positions,\
 				nameField\
