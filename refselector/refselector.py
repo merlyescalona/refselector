@@ -306,7 +306,7 @@ class ReferenceSelection:
 			"{0}_{1:0{2}d}.fasta".format(self.inputprefix,locID, self.numLociPerReplicateDigits[index])\
 		)
 		lociData=msatools.parseMSAFileWithDescriptions(fastapath)
-		descriptions=set(lociData.keys()-set([description0]))
+		descriptions=set(lociData.keys())-set([description0])
 		description="1_0_0"
 		try:
 			description=rnd.choice(descriptions)[0]
