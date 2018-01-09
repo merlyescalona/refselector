@@ -674,7 +674,7 @@ class ReferenceSelection:
 				repID,self.numReplicatesDigits\
 			)
 		)
-		newDes=">{0:0{1}d}:{2}".format(\
+		newDes=">Locus{0:0{1}d}:{2}".format(\
 			locID,\
 			self.numLociPerReplicateDigits[repID-1],\
 			des\
