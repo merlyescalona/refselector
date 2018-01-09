@@ -286,12 +286,8 @@ class ReferenceSelection:
 
 	def writeLocus(self, index,locID,description,sequence):
 		APPLOGGER.debug("Write Loci()")
-		if self.nsize > -1:
-			APPLOGGER.debug("CONCAT")
-			self.concatSelectedLoci(index,locID,description,sequence)
-		else:
-			APPLOGGER.debug("SEPARATE SEQUENCE")
-			self.writeSelectedLoci(index,locID,description,sequence)
+		self.concatSelectedLoci(index,locID,description,sequence)
+		self.writeSelectedLoci(index,locID,description,sequence)
 
 	def methodOneRandomIngroup(self,index):
 		"""
@@ -314,7 +310,7 @@ class ReferenceSelection:
 			"{0}_{1:0{2}d}.fasta".format(self.inputprefix,locID, self.numLociPerReplicateDigits[index])\
 		)
 		lociData=msatools.parseMSAFileWithDescriptions(fastapath)
-		descriptions=set(lociData.keys()-set(description0))
+		descriptions=set(lociData.keys()-set([description0]))
 		description="1_0_0"
 		try:
 			description=rnd.choice(descriptions)[0]
@@ -647,9 +643,8 @@ class ReferenceSelection:
 				repID,self.numReplicatesDigits
 			)
 		)
-		newDes=">{0}:{1}:{2:0{3}d}".format(\
+		newDes=">{0}:{1:0{2}d}".format(\
 			self.projectName,\
-			self.outputprefix,\
 			repID, self.numReplicatesDigits
 		)
 		nsequence="".join("N" for item in range(0,self.nsize))
@@ -683,21 +678,18 @@ class ReferenceSelection:
 		APPLOGGER.info("Writing selected loci {1} from ST: {0}", repID,locID)
 		outname=os.path.join(\
 			self.output,\
-			"{0}_{1:0{2}d}_{3:0{4}d}.fasta".format(\
+			"{0}_{1:0{2}d}_{3:0{4}d}.split.fasta".format(\
 				self.outputprefix,\
 				repID,self.numReplicatesDigits,\
 				locID, self.numLociPerReplicateDigits[repID-1]
 			)
 		)
-		newDes=">{0}:{1:0{2}d}:REF:{7}:{6}:{3:0{4}d}:{5}".format(\
-			self.projectName,\
+		newDes=">{0:0{1}d}:{2:0{3}d}:{4}".format(\
 			repID,\
 			self.numReplicatesDigits,\
 			locID,\
 			self.numLociPerReplicateDigits[repID-1],\
-			des[1:len(des)],\
-			self.inputprefix,\
-			self.outputprefix
+			des[1:len(des)]
 		)
 		# I'm assuming that if the file does not exist it will be created
 		outfile=open(outname,'a')
