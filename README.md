@@ -38,8 +38,29 @@ in each folder.
 - prefix of the existing [FASTA](https://en.wikipedia.org/wiki/FASTA_format) files
 - prefix for the output files
 - method indicating how to obtain the reference sequences
-- (optional) file with the description of the sequences that will be used as reference
 - (optional) length of the N sequence that will be used to separate the sequences when concatenated
+- (optional) file with the description of the sequences that will be used as reference.
+
+## Methods for reference selection
+
+Specified method to obtain the reference sequence. Values range from `0-4` ( Default: `0`), where:
+
+- (0): 	Considers the outgroup sequence as the reference loci.
+- (1): 	Extracts a specific sequence per locus
+- (2): 	Selects a random sequence from the ingroups. Same sequence throughout the loci.
+- (3): 	Selects randomly a specie and generates a consensus sequence of the sequences belonging to that species.
+- (4): 	Generates a consensus sequences from all the sequences involved (will need parameter `-sdf/--seq-desc-file`)
+
+```
+**NOTE:** 	The higher the method number, the longer it will take to generate the reference loci.
+```
+
+## Reference description file
+
+Each description should be in a separate line. The order in which the descriptions are organized
+is the order that will be considered for the specific replicate (i.e. line 1, replicate 1).
+If there are less descriptions than species tree replicates, the remaining references will be
+considered as sequence `1_0_0`.
 
 # Output
 

@@ -122,11 +122,16 @@ class ReferenceSelection:
 		APPLOGGER.info("\tDone!")
 		APPLOGGER.info("Number of replicates:\t{0}".format(self.numReplicates))
 		########################################################################
+		self.referenceLabels=["1_0_0" for item in range(0,self.numReplicates)]
+		self.numLociPerReplicate=[0]*self.numReplicates
+		self.numLociPerReplicateDigits=[0]*self.numReplicates
+		self.getNumLociPerReplicate()
+		########################################################################
 		if self.nsize > -1:
 			APPLOGGER.info("Reference sequences will be concatenated.")
 		########################################################################
 		if self.method==1:
-			if not (os.path.exists(self.sequenceReferenceFile) and os.path.isfile(self.sequenceReferenceFile)):
+			if not (os.path.exists(self.referenceIndexFile) and os.path.isfile(self.referenceIndexFile)):
 				message="{0}\n\t{1}".format(\
 					"Sequence description file does not exist.",\
 					"Please verify. Exiting."\
@@ -135,15 +140,14 @@ class ReferenceSelection:
 			else:
 				self.readReferenceIndices()
 		########################################################################
-		self.numLociPerReplicate=[0]*self.numReplicates
-		self.numLociPerReplicateDigits=[0]*self.numReplicates
-		self.getNumLociPerReplicate()
-		########################################################################
 
 	def readReferenceIndices(self):
 		APPLOGGER.info("Reading the reference index file")
 		with open(self.referenceIndexFile, "rb") as f:
-			self.referenceLabels=[line.strip() for line in f if not line.strip() ==""]
+			referenceLabels=[line.strip() for line in f if not line.strip() ==""]
+		for item in range(0,len(referenceLabels)):
+			self.referenceLabels[item]=referenceLabels[item]
+
 
 	def filterSpeciesTreeReplicates(self):
 		self.filtered=[(idx+1) for idx in range(0,self.numReplicates) \
@@ -222,8 +226,8 @@ class ReferenceSelection:
 		seq=["{}{}".format(locsequences[s],nsequence) for s in range(0,len(locsequences)) if (s+1) == len(locsequences) ]
 		seq="{}{}".format("".join(seq),locsequences[-1])
 		with open(filename,"wb") as f:
-			f.write(">{}\n{}\n".format(description,sequence))
-		self.generateBEDFile(index, description, sequence)
+			f.write(">{}\n{}\n".format(description,seq))
+		self.generateBEDFile(index, description, seq)
 
 
 	def methodSelectFromFile(self,index):
@@ -241,7 +245,7 @@ class ReferenceSelection:
 		APPLOGGER.info("Done selected sequence")
 
 
-	def methodOneRandomIngroup(self,index):
+	def methodRandomIngroup(self,index):
 		"""
 		Method 0 for the selection of reference loci.
 		This method selects the outgroup as a reference locus.
@@ -256,10 +260,12 @@ class ReferenceSelection:
 		)
 		seqDict=self.readGzippedFastaFile(fastapath)
 		description="1_0_0"
+		keys=seqDict.keys()
 		try:
-			description=rnd.choice(seqDict.keys())[0]
+			k=rnd.choice(keys)[0]
 		except:
 			pass
+		description=keys[int(k)]
 		if description==description0:
 			description="1_0_0"
 		selectedSequence=seqDict[description]
@@ -315,7 +321,7 @@ class ReferenceSelection:
 		sequences=[seqDict[item] for item in seqDict.keys() if item in subkeys]
 		selected=self.computeConsensus(sequences)
 		selectedDes="consensus_sp_{0}".format(rndKey1)
-		self.writeSequence(index,selectedDes,selectedSequence)
+		self.writeSequence(index,selectedDes,selected)
 		APPLOGGER.info("Done random ingroup consensus")
 
 	def methodConsensusAll(self,index):
@@ -336,7 +342,7 @@ class ReferenceSelection:
 		seqDict=self.readGzippedFastaFile(fastapath)
 		sequences=[seqDict[k] for k in seqDict.keys()]
 		selected=self.computeConsensus(sequences)
-		self.writeSequence(index,"consensus_all",selectedSequence)
+		self.writeSequence(index,"consensus_all",selected)
 		APPLOGGER.info("Done all ingroups consensus")
 
 
@@ -376,7 +382,7 @@ class ReferenceSelection:
 				conseq+="G"
 			elif T[indexCol] > A[indexCol] and T[indexCol] > C[indexCol] and T[indexCol] > G[indexCol] and T[indexCol] > N[indexCol]:
 				conseq+="T"
-			else: conseq+="N"
+			else: conseq+=rnd.choice(["A","C","G","T"])
 
 		APPLOGGER.info("Consensus computed")
 		return conseq
@@ -389,7 +395,6 @@ class ReferenceSelection:
 		bed=dict()
 		startpos=0; endpos=0
 		for i in range(0, len(seqlist)):
-			APPLOGGER.warning(self.numLociPerReplicateDigits[i])
 			endpos=startpos+sizelist[i]
 			locID="LOCUS_{0:0{1}d}".format(\
 				i+1,\
