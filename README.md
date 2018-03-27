@@ -15,13 +15,22 @@ target in the probe desing.
 # Assumptions
 
 - We are working under a [SimPhy](https://github.com/adamallo/simphy) - [NGSphy](https://github.com/merlyescalona/ngsphy) simulation pipeline scenario.
-Meaning, it follows hierarchical [SimPhy](https://github.com/adamallo/simphy) 's folder structure and sequence
-labeling.
+Following the same hierarchical folder structure.
 
-To know more about the simulation pipeline scenario go to:
+- Also, it is assumed that the SimPhy folder project has been compressed using [simphycompress](https://github.com/merlyescalona/simphycompress) and the
+length of the concatenation N sequence used is known. To know more about the simulation pipeline scenario go to:
+    - [SimPhy's repository](https://github.com/adamallo/simphy), and/or check:
+        - Mallo D, de Oliveira Martins L, Posada D (2016) SimPhy: Phylogenomic Simulation of Gene, Locus and Species Trees. *Syst. Biol.* **65**(2) 334-344. doi: [http://dx.doi.org/10.1093/sysbio/syv082](http://dx.doi.org/10.1093/sysbio/syv082)
+    - [INDELible's site: ](http://abacus.gene.ucl.ac.uk/software/indelible/), and/or check:
+        - Fletcher, W. and Yang, Z.( 2009) INDELible: a flexible simulator of biological sequence evolution. *Mol. Biol. Evol.* **26**(8):1879-1888. doi: [https://doi.org/10.1093/molbev/msp098](https://doi.org/10.1093/molbev/msp098)
+    - [NGSphy'S repository](https://github.com/merlyescalona/ngsphy), and/or check:
+        - Escalona M, Rocha S, Posada D (2018) NGSphy: phylogenomic simulation of next-generation sequencing data. *Bioinformatics.* bty146. doi: [https://doi.org/10.1093/bioinformatics/bty146](https://doi.org/10.1093/bioinformatics/bty146)
+    - [simphycompress repository](https://github.com/merlyescalona/simphycompress)
 
-- [SimPhy: A comprehensive simulator of gene family evolution ](https://github.com/adamallo/simphy)
-- [NGSphy: phylogenomic simulation of next-generation sequencing data](https://github.com/merlyescalona/ngsphy)
+- Species tree replicates are filtered based on the number of loci (number of sequences/ FASTA files) existing
+in each folder.
+
+- True sequences from the SimPhy/INDELible simulation process do not contain N's.
 
 # Input
 
@@ -37,6 +46,29 @@ To know more about the simulation pipeline scenario go to:
 - The output will be a directory of [FASTA](https://en.wikipedia.org/wiki/FASTA_format) files
 - There should be as many [FASTA](https://en.wikipedia.org/wiki/FASTA_format) files as replicates have been generated for the current [SimPhy](https://github.com/adamallo/simphy) project
 - Each file will contain all the selected loci, either concatenated or as a multiple alignment file
+
+
+# Install
+
+- Clone this repository
+
+```
+git clone git@github.com:merlyescalona/refselector.git
+```
+
+- Chance your current directory to the downloaded folder:
+
+```
+cd refselector
+```
+
+- Install:
+
+```
+python setup.py install --user
+```
+
+# Usage
 
 # Documentation
 
