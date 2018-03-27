@@ -18,11 +18,11 @@ matrix:
                 - export PATH=$PATH:$(pwd)/simphy/bin
                 - export PATH=$PATH:$(pwd)/INDELibleV1.03/src
                 - pip install -r requirements.txt
-                - pip install codecov
+                - pip install nose codecov
             install:
                 - python setup.py install
-
 script:
+    - nosetests --with-coverage --cover-package=refselector
     - test/data.simulation.sh
 after_success:
     - bash <(curl -s https://codecov.io/bash)
