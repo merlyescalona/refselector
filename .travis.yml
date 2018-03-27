@@ -21,8 +21,8 @@ matrix:
                 - pip install codecov
             install:
                 - python setup.py install
-            after_install:
-                - bash <(curl -s https://codecov.io/bash)
 
 script:
     - test/data.simulation.sh
+after_success:
+    - bash <(curl -s https://codecov.io/bash)
