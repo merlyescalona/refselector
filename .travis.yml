@@ -23,6 +23,10 @@ matrix:
                 - python setup.py install
 script:
     - test/data.simulation.sh
+    - nosetests --with-coverage refselector.tests.method0
     - nosetests --with-coverage refselector.tests.method1
+    - nosetests --with-coverage refselector.tests.method2
+    - nosetests --with-coverage refselector.tests.method3
+    - nosetests --with-coverage refselector.tests.method4
 after_success:
     - codecov
