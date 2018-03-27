@@ -20,7 +20,7 @@ simphycompress -s testwsimphy/ -ip data -n 10 -l DEBUG
 echo "Chacking execution method 0"
 refselector -s testwsimphy/ -ip data -op reference.300 -n 300 -m 0 -o reference
 echo "Chacking execution method 1"
-refselector -s testwsimphy/ -ip data -op reference.300 -n 300 -m 1 -o reference.1 -sdf sequence.description.txt
+refselector -s testwsimphy/ -ip data -op reference.300 -n 300 -m 1 -o reference.1 -sdf test/sequence.description.txt
 echo "Chacking execution method 2"
 refselector -s testwsimphy/ -ip data -op reference.300 -n 300 -m 2 -o reference.2
 echo "Chacking execution method 3"
