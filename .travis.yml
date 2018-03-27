@@ -23,5 +23,5 @@ matrix:
                 - python setup.py install
 script:
     - test/data.simulation.sh
-    - nosetests --with-coverage refselector.tests.method1
+    - nosetests --with-coverage refselector:tests.method1
     - bash <(curl -s https://codecov.io/bash)
