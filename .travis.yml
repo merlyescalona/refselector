@@ -22,7 +22,7 @@ matrix:
             install:
                 - python setup.py install
             after_install:
-                - codecov
+                - codecov -t bf06b8ce-cef1-4f05-8627-aa685397c271
 
 script:
     - test/data.simulation.sh
