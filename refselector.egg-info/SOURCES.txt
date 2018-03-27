@@ -8,6 +8,7 @@ refselector/__main__.py
 refselector/loggingformatter.py
 refselector/msatools.py
 refselector/refselector.py
+refselector/tests.py
 refselector.egg-info/PKG-INFO
 refselector.egg-info/SOURCES.txt
 refselector.egg-info/dependency_links.txt

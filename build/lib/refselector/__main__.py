@@ -163,6 +163,7 @@ Output:
 def main():
 	try:
 		cmdArgs = handlingParameters()
+		print(cmdArgs)
 		APPLOGGER.setLevel(cmdArgs.log.upper())
 		APPLOGGER.debug("Args. introduced: {}".format(cmdArgs))
 		prog = refselector.ReferenceSelection(cmdArgs)

@@ -18,6 +18,7 @@ setup(name='refselector',\
     py_modules=[\
         'refselector.loggingformatter', \
         'refselector.msatools', \
+        'refselector.tests', \
         'refselector.refselector' \
     ],\
     install_requires=[\
