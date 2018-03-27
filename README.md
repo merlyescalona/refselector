@@ -5,6 +5,8 @@
 
 University of Vigo, Spain, http://darwin.uvigo.es
 
+[![codecov](https://codecov.io/gh/merlyescalona/refselector/branch/master/graph/badge.svg)](https://codecov.io/gh/merlyescalona/refselector)
+
 
 # SimPhy/NGSphy refselector
 
