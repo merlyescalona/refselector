@@ -10,7 +10,7 @@ matrix:
                 - sudo apt-get install -qq libgsl0-dev libgmp-dev libmpfr-dev libsqlite0-dev
                 - wget http://abacus.gene.ucl.ac.uk/software/indelible/EFBKqHdv0v7qir6CyeHgqaz/INDELibleV1.03.tar.gz
                 - git clone https://github.com/adamallo/SimPhy simphy
-                - git clone https://github.com/merlyescalona/simphycompress
+                - git clone https://github.com/merlyescalona/simphycompress simphycompress
                 - tar -zxf INDELibleV1.03.tar.gz
                 - pushd simphy && make && make clean && popd
                 - pushd simphycompress && pyhon setup.py install && popd
