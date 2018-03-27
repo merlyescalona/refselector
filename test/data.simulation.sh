@@ -13,7 +13,17 @@ if [[ ! -f "INDELIble_wrapper.pl" ]]; then
 fi
 
 echo "Simulating DNA sequences from the gene/species trees above"
-perl INDELIble_wrapper.pl testwsimphy/ control.4.txt $RANDOM 1
+perl INDELIble_wrapper.pl testwsimphy/ control.txt $RANDOM 1
 
+simphycompress -s testwsimphy/ -ip data -n 10 -l DEBUG
 
-python ngsphy-refselector/__main__.py  -p test/testwsimphy/ -ip data -op ref -o output -m 0 -n 10 -l DEBUG
+echo "Chacking execution method 0"
+refselector -s testwsimphy/ -ip data -op reference.300 -n 300 -m 0 -o reference
+echo "Chacking execution method 1"
+refselector -s testwsimphy/ -ip data -op reference.300 -n 300 -m 1 -o reference.1 -sdf sequence.description.txt
+echo "Chacking execution method 2"
+refselector -s testwsimphy/ -ip data -op reference.300 -n 300 -m 2 -o reference.2
+echo "Chacking execution method 3"
+refselector -s testwsimphy/ -ip data -op reference.300 -n 300 -m 3 -o reference.3
+echo "Chacking execution method 4"
+refselector -s testwsimphy/ -ip data -op reference.300 -n 300 -m 4 -o reference.4
