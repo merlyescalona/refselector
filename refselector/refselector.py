@@ -78,7 +78,7 @@ class ReferenceSelection:
 		if simphydir:
 			APPLOGGER.info("SimPhy folder exists:\t{0}".format(simphydir))
 		else:
-			exc_type, exc_obj, exc_tb = sys.exc_info()
+			exc_type, _, exc_tb = sys.exc_info()
 			fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
 			ex="SimPhy folder does not exist."
 			message="{1} | File: {2} - Line:{3}\n\t{0}".format(\
@@ -91,7 +91,7 @@ class ReferenceSelection:
 		self.db = os.path.join(self.path,"{0}.db".format(self.projectName))
 		if not self.db in fileList:
 			ex="SimPhy required file do not exist."
-			exc_type, exc_obj, exc_tb = sys.exc_info()
+			exc_type, _, exc_tb = sys.exc_info()
 			fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
 			message="{1} | File: {2} - Line:{3}\n\t{0}".format(\
 				ex,exc_type,fname, exc_tb.tb_lineno,\
@@ -112,7 +112,7 @@ class ReferenceSelection:
 		# check if at least one
 		if not (self.numReplicates>0):
 			ex="Number of replicates/folders:\t{0} [Required at least 1]".format(self.numReplicates>0)
-			exc_type, exc_obj, exc_tb = sys.exc_info()
+			exc_type, _, exc_tb = sys.exc_info()
 			fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
 			message="{1} | File: {2} - Line:{3}\n\t{0}".format(\
 				ex,exc_type,fname, exc_tb.tb_lineno,\
@@ -126,6 +126,8 @@ class ReferenceSelection:
 		self.numLociPerReplicate=[0]*self.numReplicates
 		self.numLociPerReplicateDigits=[0]*self.numReplicates
 		self.getNumLociPerReplicate()
+		APPLOGGER.info("Number of loci per replicates: {}".format(self.numLociPerReplicate))
+		APPLOGGER.info("Number of loci digits per replicates: {}".format(self.numLociPerReplicateDigits))
 		########################################################################
 		if self.nsize > -1:
 			APPLOGGER.info("Reference sequences will be concatenated.")
@@ -209,8 +211,6 @@ class ReferenceSelection:
 					self.methodConsensusAll(index)
 				####################################################################
 
-
-
 	def writeSequence(self,index, description, sequence):
 		APPLOGGER.info("Writing reference sequence for replicate {0:0{1}d}".format(index+1,self.numReplicatesDigits))
 		filename=os.path.join(\
@@ -223,12 +223,11 @@ class ReferenceSelection:
 		)
 		nsequence="".join(["N"]*self.nsize)
 		locsequences=[s for s in sequence.split("N") if not s == ""]
-		seq=["{}{}".format(locsequences[s],nsequence) for s in range(0,len(locsequences)) if (s+1) == len(locsequences) ]
+		seq=["{}{}".format(locsequences[s],nsequence) for s in range(0,len(locsequences))]
 		seq="{}{}".format("".join(seq),locsequences[-1])
 		with open(filename,"wb") as f:
 			f.write(">{}\n{}\n".format(description,seq))
 		self.generateBEDFile(index, description, seq)
-
 
 	def methodSelectFromFile(self,index):
 		APPLOGGER.debug("method rndingroup")
@@ -360,11 +359,11 @@ class ReferenceSelection:
 		# Need to know how many sequences I have
 		numSeqs=len(sequences)
 		# Seqs for all nucleotides
-		A=np.zeros(seqSize);
-		C=np.zeros(seqSize);
-		G=np.zeros(seqSize);
-		T=np.zeros(seqSize);
-		N=np.zeros(seqSize);
+		A=np.zeros(seqSize)
+		C=np.zeros(seqSize)
+		G=np.zeros(seqSize)
+		T=np.zeros(seqSize)
+		N=np.zeros(seqSize)
 		for indexCol in range(0, seqSize):
 			for indexRow in range(0,numSeqs):
 				if sequences[indexRow][indexCol]=="A": A[indexCol]+=1
@@ -389,7 +388,7 @@ class ReferenceSelection:
 
 	def generateBEDFile(self,index,description, sequence):
 		APPLOGGER.info("Writing BED file for replicate {0:0{1}d}".format(index+1,self.numReplicatesDigits))
-		seqlist=[item.strip() for item in sequence.split("N") if not item == ""]
+		seqlist=[s for s in sequence.split("N") if not s == ""]
 		sizelist=[len(item) for item in seqlist]
 		repID=index+1
 		bed=dict()
@@ -398,7 +397,7 @@ class ReferenceSelection:
 			endpos=startpos+sizelist[i]
 			locID="LOCUS_{0:0{1}d}".format(\
 				i+1,\
-				self.numLociPerReplicateDigits[i]\
+				self.numLociPerReplicateDigits[index]\
 			)
 			bed[locID]={"start":startpos,"end":endpos}
 			startpos=endpos+(self.nsize-1)
@@ -412,8 +411,8 @@ class ReferenceSelection:
 		)
 		totalConcatSizeDigits=len(str(len(sequence)))
 		with open(bedfile,'a') as outfile:
-			for index in range(0, len(seqlist)):
-				locID="LOCUS_{0:0{1}d}".format(index+1,self.numLociPerReplicateDigits[index])
+			for i in range(0, len(seqlist)):
+				locID="LOCUS_{0:0{1}d}".format(i+1,self.numLociPerReplicateDigits[index])
 				positions="{startPOS:{align}{posSIZE}}\t{endPOS:{align}{posSIZE}}".format(\
 					align=">",\
 					startPOS=bed[locID]["start"],\
