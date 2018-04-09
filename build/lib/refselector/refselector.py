@@ -64,10 +64,11 @@ class ReferenceSelection:
 					counter+=1
 			if not counter == 0: outputFolderName+="_{0}".format(counter+1)
 		self.output=os.path.join(os.path.dirname(output),outputFolderName)
-		if (os.path.exists(os.path.abspath(args.off_target_loci_file))):
-			self.offtargetlocifile=os.path.abspath(args.off_target_loci_file)
-			self.readOffTargetLociFile()
-			APPLOGGER.info("Using off-target loci")
+		if (args.off_target_loci_file):
+			if (os.path.exists(os.path.abspath(args.off_target_loci_file))):
+				self.offtargetlocifile=os.path.abspath(args.off_target_loci_file)
+				self.readOffTargetLociFile()
+				APPLOGGER.info("Using off-target loci")
 		else:
 			APPLOGGER.info("NOT using off-target loci")
 			
