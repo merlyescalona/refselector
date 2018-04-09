@@ -5,6 +5,7 @@
 
 University of Vigo, Spain, http://darwin.uvigo.es
 
+[![Build Status](https://travis-ci.org/merlyescalona/refselector.svg?branch=master)](https://travis-ci.org/merlyescalona/refselector)
 [![codecov](https://codecov.io/gh/merlyescalona/refselector/branch/master/graph/badge.svg)](https://codecov.io/gh/merlyescalona/refselector)
 
 
