@@ -1,4 +1,4 @@
-import argparse,datetime,logging,os,sys, refselector, msatools
+import argparse,datetime,logging,os,sys, coverage,refselector, msatools
 import loggingformatter as lf
 import numpy as np
 import random as rnd
