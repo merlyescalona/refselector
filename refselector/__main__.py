@@ -126,6 +126,9 @@ Output:
 		help="Path where output will be written. ",\
 		required=True)
 	optionalGroup= parser.add_argument_group('Optional arguments')
+	optionalGroup.add_argument('-off','--off-target-loci-file',metavar='<off_target_loci_file_path>', type=str,\
+		help="When the selected dataset considers off-target loci, this file will indicate in a single comma-separated line, "+\
+		"all the lociIDs that will not be taken into account to generate the reference sequence.")
 	optionalGroup.add_argument('-sdf','--seq-desc-file',metavar='<sequence_descriptions_file_path>', type=str,\
 		help="When method = 4 has been selected, it is required to identify a file with the sequence descriptions, "+\
 		"used as identifiers, corresponding to the sequence that will be used as reference per replicate.")

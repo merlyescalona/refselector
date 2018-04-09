@@ -25,6 +25,8 @@ class ReferenceSelection:
 	numReplicatesDigits=0
 	referenceIndexFile=""
 	referenceLabels=[]
+	offtargetloci=[]
+	offtargetlocifile=""
 
 	def __init__(self, args):
 		self.startTime=datetime.datetime.now()
@@ -62,6 +64,13 @@ class ReferenceSelection:
 					counter+=1
 			if not counter == 0: outputFolderName+="_{0}".format(counter+1)
 		self.output=os.path.join(os.path.dirname(output),outputFolderName)
+		if (os.path.exists(os.path.abspath(args.off_target_loci_file))):
+			self.offtargetlocifile=os.path.abspath(args.off_target_loci_file)
+			self.readOffTargetLociFile()
+			APPLOGGER.info("Using off-target loci")
+		else:
+			APPLOGGER.info("NOT using off-target loci")
+			
 		########################################################################
 		# Generation of the output folder
 		try:
@@ -186,6 +195,14 @@ class ReferenceSelection:
 		    key=file_content[item][1:]
 		    seqDict[key]=file_content[item+1]
 		return seqDict
+	
+	def readOffTargetLociFile(self):
+		APPLOGGER.info("Reading OFF-target loci file")
+		with open(self.offtargetlocifile, "rb") as f: 
+			self.offtargetloci=f.read().strip().split(",")			
+		self.offtargetloci=[ int(item) for item in self.offtargetloci if item != ""]
+		self.offtargetloci.sort()
+		
 
 	def iterateOverReplicate(self):
 		APPLOGGER.debug("IterateOverReplicate")
@@ -222,11 +239,15 @@ class ReferenceSelection:
 			)
 		)
 		nsequence="".join(["N"]*self.nsize)
-		locsequences=[s for s in sequence.split("N") if not s == ""]
+		splitSequence=sequence.split("N")
+		locsequences=[splitSequence[s] for s in range(0,len(splitSequence)) if not splitSequence[s] == "" and not s in self.offtargetloci]
 		seq=["{}{}".format(locsequences[s],nsequence) for s in range(0,len(locsequences))]
 		seq="{}{}".format("".join(seq),locsequences[-1])
 		with open(filename,"wb") as f:
 			f.write(">{}\n{}\n".format(description,seq))
+		locsequences=[splitSequence[s] for s in range(0,len(splitSequence)) if not splitSequence[s] == ""]
+		seq=["{}{}".format(locsequences[s],nsequence) for s in range(0,len(locsequences))]
+		seq="{}{}".format("".join(seq),locsequences[-1])
 		self.generateBEDFile(index, description, seq)
 
 	def methodSelectFromFile(self,index):
@@ -388,19 +409,21 @@ class ReferenceSelection:
 
 	def generateBEDFile(self,index,description, sequence):
 		APPLOGGER.info("Writing BED file for replicate {0:0{1}d}".format(index+1,self.numReplicatesDigits))
-		seqlist=[s for s in sequence.split("N") if not s == ""]
+		splitSequence=sequence.split("N")
+		seqlist=[splitSequence[s] for s in range(0,len(splitSequence)) if not splitSequence[s] == "" and not s in self.offtargetloci]
 		sizelist=[len(item) for item in seqlist]
 		repID=index+1
 		bed=dict()
 		startpos=0; endpos=0
 		for i in range(0, len(seqlist)):
-			endpos=startpos+sizelist[i]
-			locID="LOCUS_{0:0{1}d}".format(\
-				i+1,\
-				self.numLociPerReplicateDigits[index]\
-			)
-			bed[locID]={"start":startpos,"end":endpos}
-			startpos=endpos+(self.nsize-1)
+			if not (i+1) in self.offtargetloci:
+				endpos=startpos+sizelist[i]
+				locID="LOCUS_{0:0{1}d}".format(\
+					i+1,\
+					self.numLociPerReplicateDigits[index]\
+				)
+				bed[locID]={"start":startpos,"end":endpos}
+				startpos=endpos+(self.nsize-1)
 
 		bedfile=os.path.join(\
 			self.output,\
@@ -412,18 +435,19 @@ class ReferenceSelection:
 		totalConcatSizeDigits=len(str(len(sequence)))
 		with open(bedfile,'a') as outfile:
 			for i in range(0, len(seqlist)):
-				locID="LOCUS_{0:0{1}d}".format(i+1,self.numLociPerReplicateDigits[index])
-				positions="{startPOS:{align}{posSIZE}}\t{endPOS:{align}{posSIZE}}".format(\
-					align=">",\
-					startPOS=bed[locID]["start"],\
-					endPOS=bed[locID]["end"],\
-					posSIZE=totalConcatSizeDigits\
-				)
-				outfile.write("{0}\t{1}\t{2}\n".format(\
-					locID,\
-					positions,\
-					description\
-				))
+				if not (i+1) in self.offtargetloci:
+					locID="LOCUS_{0:0{1}d}".format(i+1,self.numLociPerReplicateDigits[index])
+					positions="{startPOS:{align}{posSIZE}}\t{endPOS:{align}{posSIZE}}".format(\
+						align=">",\
+						startPOS=bed[locID]["start"],\
+						endPOS=bed[locID]["end"],\
+						posSIZE=totalConcatSizeDigits\
+					)
+					outfile.write("{0}\t{1}\t{2}\n".format(\
+						locID,\
+						positions,\
+						description\
+					))
 
 	def run(self):
 		"""
